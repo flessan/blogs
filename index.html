@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Blog</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <link rel="alternate" type="application/rss+xml" title="Static Blog RSS Feed" href="feed.xml">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <a href="index.html">Static Blog</a>
+            </div>
+            <div class="theme-toggle">
+                <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="admin.html">Admin</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="content-wrapper">
+            <aside class="sidebar">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search posts...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                
+                <div class="filter-section">
+                    <h3>Filter by Tags</h3>
+                    <div id="tag-cloud"></div>
+                </div>
+                
+                <div class="recent-posts">
+                    <h3>Recent Posts</h3>
+                    <ul id="recent-posts"></ul>
+                </div>
+            </aside>
+
+            <main class="content">
+                <div class="posts-container" id="posts-container">
+                    <!-- Posts will be dynamically loaded here -->
+                </div>
+            </main>
+        </div>
+
+        <footer>
+            <p>&copy; 2023 Static Blog. All rights reserved.</p>
+            <div class="social-links">
+                <a href="https://threads.com/flethio" class="social-link"><i class="fab fa-threads"></i></a>
+                <a href="https://github.com/flessan" class="social-link"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/flessan" class="social-link"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Register service worker for offline mode
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('assets/js/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed');
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
