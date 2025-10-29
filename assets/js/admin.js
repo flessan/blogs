@@ -6,6 +6,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup event listeners
     setupEventListeners();
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('post-date');
+    if (dateInput) {
+        dateInput.value = today;
+    }
 });
 
 // Login Management
@@ -308,6 +315,7 @@ function createPostItem(post) {
             </div>
             <div class="post-item-actions">
                 <button class="edit-btn" data-file="${post.file}"><i class="fas fa-edit"></i> Edit</button>
+                <button class="download-btn" data-file="${post.file}"><i class="fas fa-download"></i> Download</button>
                 <button class="delete-btn" data-file="${post.file}"><i class="fas fa-trash"></i> Delete</button>
             </div>
         </div>
@@ -315,10 +323,15 @@ function createPostItem(post) {
     
     // Add event listeners
     const editBtn = postItem.querySelector('.edit-btn');
+    const downloadBtn = postItem.querySelector('.download-btn');
     const deleteBtn = postItem.querySelector('.delete-btn');
     
     if (editBtn) {
         editBtn.addEventListener('click', () => editPost(post.file));
+    }
+    
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => downloadPost(post.file));
     }
     
     if (deleteBtn) {
@@ -334,7 +347,7 @@ function getPostViews(postFile) {
 }
 
 // Create Post
-async function savePost() {
+function savePost() {
     const title = document.getElementById('post-title').value.trim();
     const date = document.getElementById('post-date').value;
     const tagsInput = document.getElementById('post-tags').value.trim();
@@ -363,39 +376,23 @@ async function savePost() {
     markdownContent += '---\n\n';
     markdownContent += content;
     
-    try {
-        // In a real application, we would save this to a file
-        // Since we can't do that from the browser, we'll simulate it
-        // by storing in localStorage and showing a success message
-        
-        // Store post in localStorage
-        const postsKey = 'draftPosts';
-        const draftPosts = JSON.parse(localStorage.getItem(postsKey) || '{}');
-        draftPosts[filename] = markdownContent;
-        localStorage.setItem(postsKey, JSON.stringify(draftPosts));
-        
-        // Add activity
-        addActivity(`Created new post: ${title}`);
-        
-        // Show success message
-        alert(`Post "${title}" has been created. In a real deployment, this would be saved as a file.`);
-        
-        // Clear form
-        document.getElementById('post-title').value = '';
-        document.getElementById('post-date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('post-tags').value = '';
-        document.getElementById('post-content').value = '';
-        
-        // Reload posts list
-        loadPosts();
-        
-        // Reload dashboard data
-        loadDashboardData();
-        
-    } catch (error) {
-        console.error('Error saving post:', error);
-        alert('Failed to save post. Please try again.');
-    }
+    // Store in localStorage for download
+    const postsKey = 'draftPosts';
+    const draftPosts = JSON.parse(localStorage.getItem(postsKey) || '{}');
+    draftPosts[filename] = markdownContent;
+    localStorage.setItem(postsKey, JSON.stringify(draftPosts));
+    
+    // Add activity
+    addActivity(`Created new post: ${title}`);
+    
+    // Show success message
+    alert(`Post "${title}" has been saved. Click "Download Markdown" to download the file.`);
+    
+    // Reload posts list
+    loadPosts();
+    
+    // Reload dashboard data
+    loadDashboardData();
 }
 
 function previewPost() {
@@ -440,6 +437,113 @@ function previewPost() {
     }
 }
 
+function downloadPostFile() {
+    const title = document.getElementById('post-title').value.trim();
+    const date = document.getElementById('post-date').value;
+    const tagsInput = document.getElementById('post-tags').value.trim();
+    const content = document.getElementById('post-content').value.trim();
+    
+    if (!title || !date || !content) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    // Parse tags
+    const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()) : [];
+    
+    // Generate filename from title
+    const filename = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.md';
+    
+    // Create markdown content with frontmatter
+    let markdownContent = '---\n';
+    markdownContent += `title: "${title}"\n`;
+    markdownContent += `date: "${date}"\n`;
+    
+    if (tags.length > 0) {
+        markdownContent += `tags: "${tags.join(', ')}"\n`;
+    }
+    
+    markdownContent += '---\n\n';
+    markdownContent += content;
+    
+    // Create a blob and download
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Add activity
+    addActivity(`Downloaded post: ${title}`);
+}
+
+// Download existing post
+async function downloadPost(filename) {
+    try {
+        // Fetch post
+        const response = await fetch(`posts/${filename}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch post');
+        }
+        
+        const markdownContent = await response.text();
+        
+        // Create a blob and download
+        const blob = new Blob([markdownContent], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Add activity
+        addActivity(`Downloaded post: ${filename}`);
+        
+    } catch (error) {
+        console.error('Error downloading post:', error);
+        alert('Failed to download post. Please try again.');
+    }
+}
+
+// Download posts.json
+async function downloadPostsJson() {
+    try {
+        // Fetch posts list
+        const postsResponse = await fetch('posts/posts.json');
+        if (!postsResponse.ok) {
+            throw new Error('Failed to fetch posts list');
+        }
+        
+        const postsList = await postsResponse.json();
+        const postsJsonContent = JSON.stringify(postsList, null, 2);
+        
+        // Create a blob and download
+        const blob = new Blob([postsJsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'posts.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Add activity
+        addActivity('Downloaded posts.json');
+        
+    } catch (error) {
+        console.error('Error downloading posts.json:', error);
+        alert('Failed to download posts.json. Please try again.');
+    }
+}
+
 // Edit Post
 async function editPost(filename) {
     try {
@@ -468,6 +572,12 @@ async function editPost(filename) {
         // Scroll to top of form
         document.querySelector('.create-post-form').scrollIntoView({ behavior: 'smooth' });
         
+        // Store the original filename
+        localStorage.setItem('editingPost', filename);
+        
+        // Add activity
+        addActivity(`Edited post: ${post.title}`);
+        
     } catch (error) {
         console.error('Error editing post:', error);
         alert('Failed to edit post. Please try again.');
@@ -478,15 +588,11 @@ async function editPost(filename) {
 function deletePost(filename) {
     if (confirm(`Are you sure you want to delete this post? This action cannot be undone.`)) {
         try {
-            // In a real application, we would delete the file
-            // Since we can't do that from the browser, we'll simulate it
-            // by storing in localStorage and showing a success message
-            
             // Add activity
             addActivity(`Deleted post: ${filename}`);
             
             // Show success message
-            alert(`Post "${filename}" has been marked for deletion. In a real deployment, this file would be deleted.`);
+            alert(`Post "${filename}" has been marked for deletion. Please update posts.json and remove the file from the server.`);
             
             // Reload posts list
             loadPosts();
@@ -563,6 +669,163 @@ function switchTab(tabName) {
     });
 }
 
+// Templates
+function loadTemplate(templateName) {
+    const templates = {
+        standard: `---
+title: "Your Post Title"
+date: "${new Date().toISOString().split('T')[0]}"
+tags: "tag1, tag2, tag3"
+---
+
+# Introduction
+
+Write your introduction here.
+
+## Main Content
+
+Write your main content here.
+
+### Subsection
+
+Write your subsection here.
+
+## Conclusion
+
+Write your conclusion here.`,
+        
+        tutorial: `---
+title: "How to [Do Something]"
+date: "${new Date().toISOString().split('T')[0]}"
+tags: "tutorial, guide, how-to"
+---
+
+# Introduction
+
+In this tutorial, you'll learn how to [do something]. This guide is suitable for beginners and will take you through each step in detail.
+
+## Prerequisites
+
+Before you start, make sure you have:
+
+- Prerequisite 1
+- Prerequisite 2
+- Prerequisite 3
+
+## Step 1: First Step
+
+Describe the first step in detail.
+
+## Step 2: Second Step
+
+Describe the second step in detail.
+
+## Step 3: Third Step
+
+Describe the third step in detail.
+
+## Conclusion
+
+Congratulations! You've successfully learned how to [do something].`,
+
+        review: `---
+title: "[Product Name] Review"
+date: "${new Date().toISOString().split('T')[0]}"
+tags: "review, [product category]"
+---
+
+# Introduction
+
+Today, we're taking a close look at [Product Name]. In this review, we'll cover its features, performance, and whether it's worth your money.
+
+## Specifications
+
+- Feature 1: [Description]
+- Feature 2: [Description]
+- Feature 3: [Description]
+
+## Design and Build Quality
+
+Describe the design and build quality of the product.
+
+## Performance
+
+Describe how the product performs in real-world use.
+
+## Pros and Cons
+
+### Pros
+- Pro 1
+- Pro 2
+- Pro 3
+
+### Cons
+- Con 1
+- Con 2
+- Con 3
+
+## Conclusion
+
+Summarize your thoughts on the product and give your final verdict.`,
+
+        listicle: `---
+title: "10 Ways to [Achieve Something]"
+date: "${new Date().toISOString().split('T')[0]}"
+tags: "list, tips, [topic]"
+---
+
+# Introduction
+
+Looking for ways to [achieve something]? We've got you covered! Here are 10 effective methods to help you reach your goal.
+
+## 1. First Method
+
+Describe the first method in detail.
+
+## 2. Second Method
+
+Describe the second method in detail.
+
+## 3. Third Method
+
+Describe the third method in detail.
+
+## 4. Fourth Method
+
+Describe the fourth method in detail.
+
+## 5. Fifth Method
+
+Describe the fifth method in detail.
+
+## 6. Sixth Method
+
+Describe the sixth method in detail.
+
+## 7. Seventh Method
+
+Describe the seventh method in detail.
+
+## 8. Eighth Method
+
+Describe the eighth method in detail.
+
+## 9. Ninth Method
+
+Describe the ninth method in detail.
+
+## 10. Tenth Method
+
+Describe the tenth method in detail.
+
+## Conclusion
+
+Try out these methods and see which ones work best for you. Remember that consistency is key to [achieving something].`
+    };
+    
+    return templates[templateName] || '';
+}
+
 // Event Listeners
 function setupEventListeners() {
     // Login form
@@ -604,6 +867,18 @@ function setupEventListeners() {
         previewPostBtn.addEventListener('click', previewPost);
     }
     
+    // Download post button
+    const downloadPostBtn = document.getElementById('download-post');
+    if (downloadPostBtn) {
+        downloadPostBtn.addEventListener('click', downloadPostFile);
+    }
+    
+    // Download posts.json button
+    const downloadPostsJsonBtn = document.getElementById('download-posts-json');
+    if (downloadPostsJsonBtn) {
+        downloadPostsJsonBtn.addEventListener('click', downloadPostsJson);
+    }
+    
     // Save settings button
     const saveSettingsBtn = document.getElementById('save-settings');
     if (saveSettingsBtn) {
@@ -622,6 +897,18 @@ function setupEventListeners() {
         postSearch.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             filterPosts(searchTerm);
+        });
+    }
+    
+    // Template selector
+    const templateSelector = document.getElementById('post-template');
+    if (templateSelector) {
+        templateSelector.addEventListener('change', (e) => {
+            const templateName = e.target.value;
+            if (templateName) {
+                const template = loadTemplate(templateName);
+                document.getElementById('post-content').value = template;
+            }
         });
     }
 }
