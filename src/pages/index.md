@@ -27,3 +27,22 @@ npx our-product init
 
 # Jalankan server
 npx our-product start
+```
+
+:::tip
+Pastikan Anda memiliki Node.js versi 14 atau lebih tinggi terinstal di sistem Anda.
+:::
+
+## Dokumentasi Lengkap
+
+Jelajahi dokumentasi kami menggunakan menu navigasi di sebelah kiri. Anda juga dapat menggunakan fitur pencarian untuk menemukan topik spesifik dengan cepat.
+
+## Dukungan
+
+Jika Anda membutuhkan bantuan lebih lanjut:
+
+1. Periksa [FAQ](faq.html)
+2. Kunjungi [forum komunitas](https://community.example.com)
+3. Hubungi [tim dukungan](mailto:support@example.com)
+
+Terima kasih telah menggunakan produk kami!
