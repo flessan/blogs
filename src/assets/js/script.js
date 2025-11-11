@@ -25,20 +25,33 @@ searchInput.addEventListener('input', async (e) => {
     return;
   }
   
-  // Fetch search index (dibuat saat build)
   try {
     const response = await fetch('/assets/js/search-index.json');
     const data = await response.json();
     
+    // Filter berdasarkan query
     const results = data.filter(page => 
       page.title.toLowerCase().includes(query) || 
       page.content.toLowerCase().includes(query)
     );
     
-    if (results.length > 0) {
-      searchResults.innerHTML = results.map(page => `
-        <div class="search-result">
-          <a href="/${page.path}">${page.title}</a>
+    // Group by category
+    const groupedResults = results.reduce((acc, page) => {
+      if (!acc[page.category]) acc[page.category] = [];
+      acc[page.category].push(page);
+      return acc;
+    }, {});
+    
+    if (Object.keys(groupedResults).length > 0) {
+      searchResults.innerHTML = Object.entries(groupedResults).map(([category, pages]) => `
+        <div class="search-category">
+          <div class="category-title">${category}</div>
+          ${pages.map(page => `
+            <div class="search-result">
+              <a href="/${page.path}">${page.title}</a>
+              <div class="search-snippet">${page.content.substring(0, 100)}...</div>
+            </div>
+          `).join('')}
         </div>
       `).join('');
     } else {
@@ -107,27 +120,20 @@ document.querySelectorAll('.markdown-body img').forEach(img => {
   });
 });
 
-// Tambahkan CSS untuk lightbox
-const style = document.createElement('style');
-style.textContent = `
-  .lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    cursor: pointer;
-  }
+// Copy Code Button
+document.querySelectorAll('pre code').forEach(block => {
+  const button = document.createElement('button');
+  button.className = 'copy-button';
+  button.textContent = 'Salin';
+  button.addEventListener('click', () => {
+    navigator.clipboard.writeText(block.textContent);
+    button.textContent = 'Tersalin!';
+    setTimeout(() => {
+      button.textContent = 'Salin';
+    }, 2000);
+  });
   
-  .lightbox img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 8px;
-  }
-`;
-document.head.appendChild(style);
+  const pre = block.parentElement;
+  pre.style.position = 'relative';
+  pre.appendChild(button);
+});
