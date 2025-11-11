@@ -7,17 +7,29 @@ description: Panduan awal untuk menggunakan produk kami
 
 Selamat datang di dokumentasi produk kami! Panduan ini akan membantu Anda memulai dengan cepat.
 
+## Prasyarat
+
+Sebelum memulai, pastikan Anda telah memenuhi prasyarat berikut:
+
+- Node.js versi 14 atau lebih tinggi
+- npm versi 6 atau lebih tinggi
+- Akses internet untuk mengunduh dependensi
+
 ## Instalasi
 
 Untuk menginstal produk, jalankan perintah berikut:
 
 ```bash
-npm install my-product
+npm install our-product
 ```
+
+:::info
+Jika Anda menggunakan Yarn, Anda dapat menjalankan `yarn add our-product` sebagai gantinya.
+:::
 
 ## Konfigurasi Dasar
 
-Buat file konfigurasi `config.json`:
+Buat file konfigurasi `config.json` di root proyek Anda:
 
 ```json
 {
@@ -25,7 +37,8 @@ Buat file konfigurasi `config.json`:
   "version": "1.0.0",
   "settings": {
     "theme": "light",
-    "language": "id"
+    "language": "id",
+    "debug": false
   }
 }
 ```
@@ -35,49 +48,45 @@ Buat file konfigurasi `config.json`:
 Jalankan aplikasi dengan perintah:
 
 ```bash
-npm start
+npx our-product start
 ```
 
 Aplikasi akan tersedia di `http://localhost:3000`.
 
-![Dashboard Aplikasi](/images/dashboard.png)
+:::warning
+Jangan jalankan aplikasi sebagai root user untuk alasan keamanan.
+:::
+
+## Struktur Proyek
+
+Setelah instalasi, proyek Anda akan memiliki struktur berikut:
+
+```
+my-project/
+├── config.json
+├── src/
+│   ├── index.js
+│   └── styles/
+│       └── main.css
+├── public/
+│   └── index.html
+└── package.json
+```
 
 ## Langkah Selanjutnya
 
-- [Konfigurasi Lanjutan](/advanced/configuration.html)
-- [Panduan Deployment](/advanced/deployment.html)
-```
+- [Konfigurasi Lanjutan](advanced/configuration.html)
+- [Panduan Deployment](advanced/deployment.html)
+- [API Reference](api/reference.html)
 
-### Fitur Unik yang Diimplementasikan:
-1. **Navigasi Otomatis**: Generate dari struktur folder
-2. **Pencarian Real-time**: Dengan indeks yang dibuat saat build
-3. **Mode Gelap/Terang**: Dengan penyimpanan preferensi
-4. **Edit Halaman**: Tombol untuk langsung edit di GitHub
-5. **Pagination Navigasi**: Antara halaman dokumentasi
-6. **Image Lightbox**: Klik gambar untuk tampilan besar
-7. **Syntax Highlighting**: Untuk blok kode
-8. **Responsive Design**: Untuk perangkat mobile
-9. **SEO Friendly**: Meta tags otomatis
-10. **Front Matter Support**: Untuk metadata halaman
+## Troubleshooting
 
-### Cara Deploy ke Cloudflare Pages:
-1. Push semua file ke repository GitHub
-2. Di Cloudflare Pages:
-   - Koneksi ke repository GitHub
-   - Build command: `npm install && npm run build`
-   - Build output directory: `dist`
-3. Deploy otomatis setiap push ke branch utama
+Jika Anda mengalami masalah selama instalasi:
 
-### Cara Penggunaan:
-1. Tambahkan file markdown di `src/pages`
-2. Gunakan front matter untuk metadata:
-   ```markdown
-   ---
-   title: Judul Halaman
-   description: Deskripsi singkat
-   ---
-   ```
-3. Jalankan `npm run build` untuk generate situs
-4. Folder `dist` siap di-deploy
+1. Pastikan semua prasyarat terpenuhi
+2. Hapus folder `node_modules` dan jalankan `npm install` kembali
+3. Periksa log error untuk informasi lebih detail
 
-Sistem ini memberikan pengalaman dokumentasi yang modern dengan fitur lengkap namun tetap ringan dan mudah di-deploy ke Cloudflare Pages.
+:::danger
+Jangan mengubah file di dalam folder `node_modules` secara manual karena perubahan akan hilang saat instalasi ulang.
+:::
