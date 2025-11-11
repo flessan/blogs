@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} - My Docs</title>
+  <meta name="description" content="{{ description }}">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/github.min.css">
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="/images/logo.png" alt="Logo" class="logo">
+        <h1>My Docs</h1>
+      </div>
+      <div class="search-box">
+        <input type="text" id="search" placeholder="Cari dokumentasi...">
+        <div id="search-results"></div>
+      </div>
+      <nav class="navigation">
+        {{ navigation }}
+      </nav>
+    </aside>
+    
+    <main class="content">
+      <div class="content-header">
+        <h1>{{ title }}</h1>
+        <div class="page-actions">
+          <button id="theme-toggle">🌙</button>
+          <button id="edit-page">Edit</button>
+        </div>
+      </div>
+      <div class="markdown-body">
+        {{ content }}
+      </div>
+      <div class="page-footer">
+        <div class="pagination">
+          <!-- Pagination akan diisi oleh JavaScript -->
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="/assets/js/script.js"></script>
+</body>
+</html>
