@@ -1,13 +1,20 @@
 {
-  "name": "my-docs",
+  "name": "static-docs",
   "version": "1.0.0",
+  "description": "Static documentation generator",
+  "main": "build.js",
   "scripts": {
-    "build": "node build.js"
+    "build": "node build.js",
+    "dev": "npm run build && live-server dist"
   },
   "dependencies": {
     "fs-extra": "^10.0.0",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.3.1",
-    "marked": "^4.0.10"
+    "marked": "^4.0.10",
+    "jsdom": "^19.0.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
   }
 }
